@@ -1,36 +1,47 @@
 const http = require('http')
-const promisify = require('util').promisify
-// const port = process.argv
+const port = getPortFromArgv() || 5555
 const axios = require('axios').default
 
-http.createServer(function (req, res) {
-  // res.write(req.method)
-  // res.write('\n')
-  // res.write(JSON.stringify(req.headers,null,2))
-  // res.write('\n')
-  makeRequest(getUrl(req), req.method)
+http
+  .createServer(handleRequest)
+  .listen(port)
+  .on('error', console.error)
+  .on('listening', () => { console.log(`node-proxy listening on port ${port}`) })
+
+
+async function handleRequest(req, res) {
+  const body = await getBody(req)
+
+  makeRequest(getUrl(req), req.method, body)
     .then(resp => {
       res.writeHead(
         resp.status,
         resp.statusText,
-        resp.headers
+        {
+          ...resp.headers,
+          'access-control-allow-origin': '*'
+        },
       )
-      res.write(JSON.stringify(resp.data))
+      res.end(resp.data)
+    })
+    .catch(err => {
+      res.writeHead(500, { 'Content-Type': 'text/html' })
+      res.write(err.toString())
       res.end()
     })
-}).listen(5555)
-
+}
 
 function getUrl(req) {
   return req.url.replace(/^\//, '')
 }
 
-async function makeRequest(url, method, headers) {
-  const res = await axios({
-    url,
+function makeRequest(url, method, body) {
+  return axios(url, {
     method,
+    transformResponse: r => r,
+    responseType: 'arraybuffer',
+    data: body
   })
-  return res
 }
 
 function getBody(req) {
@@ -44,4 +55,12 @@ function getBody(req) {
       rsv(chunks)
     })
   })
+}
+
+function getPortFromArgv() {
+  const args = process.argv.slice(2)
+  const portIdx = args.findIndex(x => x === '--port')
+  if (~portIdx && Number(args[portIdx + 1])) {
+    return args[portIdx + 1]
+  }
 }

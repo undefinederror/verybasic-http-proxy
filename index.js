@@ -1,5 +1,5 @@
 const http = require('http')
-const port = getFromArgv('port') || 5555
+const port = Number(getFromArgv('port')) || 5555
 const axios = require('axios').default
 const nodeUrl = require('url')
 
@@ -16,7 +16,7 @@ const headers = {
   'access-control-allow-methods': '*',
 }
 
-async function handleRequest(req, res) {
+function handleRequest(req, res) {
   if (req.method === 'OPTIONS') {
     res.writeHead(
       200,
@@ -112,7 +112,7 @@ function getBody(req) {
 function getFromArgv(arg) {
   const args = process.argv.slice(2)
   const argIdx = args.findIndex(x => x === '--' + arg)
-  if (~argIdx && Number(args[argIdx + 1])) {
+  if (~argIdx) {
     return args[argIdx + 1]
   }
 }

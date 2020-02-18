@@ -1,5 +1,5 @@
 const http = require('http')
-const port = getPortFromArgv() || 5555
+const port = getFromArgv('port') || 5555
 const axios = require('axios').default
 const nodeUrl = require('url')
 
@@ -7,11 +7,25 @@ http
   .createServer(handleRequest)
   .listen(port)
   .on('error', console.error)
-  .on('listening', () => { console.log(`node-proxy listening on port ${port}`) })
+  .on('listening', () => { console.log(`basic-http-proxy listening on port ${port}`) })
 
+
+const headers = {
+  'access-control-allow-headers': '*',
+  'access-control-allow-origin': '*',
+  'access-control-allow-methods': '*',
+}
 
 async function handleRequest(req, res) {
-
+  if (req.method === 'OPTIONS') {
+    res.writeHead(
+      200,
+      'go on',
+      headers
+    )
+    res.end()
+    return
+  }
   makeRequest(req)
     .then(resp => {
       res.writeHead(
@@ -19,36 +33,35 @@ async function handleRequest(req, res) {
         resp.statusText,
         {
           ...resp.headers,
-          'access-control-allow-origin': '*',
-          'access-control-allow-method': '*'
+          ...headers,
+          'content-length': resp.data.length
         },
       )
-      res.end(resp.data)
+      res.write(resp.data)
+      res.end()
     })
     .catch(err => {
-      response = Object.keys(err.response || {}).length
+      resp = Object.keys(err.response || {}).length
         ? err.response
         : {
           status: 500,
           statusText: err.config ? err.config.message : err.message,
           data: err.config ? err.config.stack : err.stack
         }
-      res.writeHead(response.status, response.statusText, response.headers)
+      res.writeHead(
+        resp.status,
+        resp.statusText,
+        {
+          ...resp.headers,
+          ...headers
+        }
+      )
       res.write(response.data)
       console.log(response.data)
       res.end()
     })
 }
 
-function getUrl(req) {
-  return req.url.replace(/^\//, '')
-}
-function tapProps(obj, fn) {
-  return Object.keys(obj)
-    .reduce((acc, key) =>
-      Object.assign(acc, { [fn(key)]: obj[key] })
-      , {})
-}
 async function makeRequest(req) {
   const url = getUrl(req)
   const parsedURL = new nodeUrl.URL(url)
@@ -56,28 +69,33 @@ async function makeRequest(req) {
   const headersLower = tapProps(req.headers, String.prototype.toLowerCase.call.bind(String.prototype.toLowerCase))
   const headers = {
     "accept": "*/*",
-    "accept-encoding": "gzip, deflate",
-    "user-agent": "PostmanRuntime/7.19.0",
+    "connection": "keep-alive",
+    "cache-control": "no-cache",
     ...headersLower,
-    // "Content-Type": "application/json",
-    "postman-token": "ac001878-60d6-4025-b459-f130aee33a46,5b43bd89-d712-425a-86f5-36305280110f",
+    "user-agent": "PostmanRuntime/7.19.0",
     "host": parsedURL.host,
     origin: parsedURL.origin,
     referer: parsedURL.origin,
-    // "Content-Length": "92",
-    "cookie": "aka-cc=IT; aka-ct=MILANO; aka-zp=; ak_bmsc=3B4D9B7EF54CEFCEA08B928C4980EC6A02150CA3FF3000009612445E6C1FE22D~plI3TZPf3zH5MVMmnnSwmj+QyKhrAlFsG+zB/xWsAPF5cpVrotbNmATW145/Gn1xkGlTQruui/US99ru2o609IjfIe68LgUpvIutQAYWwcLPu+eKN3k04L6BYVNgRJOcUE4TVLz0T/AECYi6k57NK+FYUY3lfELLxPqJACe4t42DUMUqvJcAVmmZLEGFeUpYtdDUu7Ya81nQAnwiYEim8e75WC09O6R0frFiFIoZpnb3Y=",
-    "connection": "keep-alive",
-    "cache-control": "no-cache"
   }
   return axios(url, {
     method: req.method,
     transformResponse: r => r,
-    //responseType: 'arraybuffer',
+    responseType: 'arraybuffer',
     headers,
     data: body
   })
 }
 
+function getUrl(req) {
+  return req.url.replace(/^\//, '')
+}
+
+function tapProps(obj, fn) {
+  return Object.keys(obj)
+    .reduce((acc, key) =>
+      Object.assign(acc, { [fn(key)]: obj[key] })
+      , {})
+}
 function getBody(req) {
   return new Promise((rsv, rjt) => {
     let chunks = ''
@@ -91,10 +109,10 @@ function getBody(req) {
   })
 }
 
-function getPortFromArgv() {
+function getFromArgv(arg) {
   const args = process.argv.slice(2)
-  const portIdx = args.findIndex(x => x === '--port')
-  if (~portIdx && Number(args[portIdx + 1])) {
-    return args[portIdx + 1]
+  const argIdx = args.findIndex(x => x === '--' + arg)
+  if (~argIdx && Number(args[argIdx + 1])) {
+    return args[argIdx + 1]
   }
 }

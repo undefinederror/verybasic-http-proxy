@@ -1,7 +1,7 @@
 {
   "name": "verybasic-http-proxy",
   "version": "1.0.0",
-  "description": "",
+  "description": "A very basic http proxy in nodejs",
   "author": "undefinederror <undefinederror@object.ninja>",
   "license": "WTFPL",
   "repository": {
@@ -18,7 +18,7 @@
     "verybasic-http-proxy": "./cli.js"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"No test specified\""
   },
   "dependencies": {
     "axios": "^0.19.2"

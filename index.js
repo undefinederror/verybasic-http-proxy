@@ -1,19 +1,18 @@
 const http = require('http')
-const port = Number(getFromArgv('port')) || 5555
 const axios = require('axios').default
 const nodeUrl = require('url')
-
-http
-  .createServer(handleRequest)
-  .listen(port)
-  .on('error', console.error)
-  .on('listening', () => { console.log(`basic-http-proxy listening on port ${port}`) })
-
-
-const headers = {
+const headersACA = {
   'access-control-allow-headers': '*',
   'access-control-allow-origin': '*',
   'access-control-allow-methods': '*',
+}
+
+module.exports = function createProxy(port) {
+  http
+    .createServer(handleRequest)
+    .listen(port)
+    .on('error', console.error)
+    .on('listening', () => { console.log(`verybasic-http-proxy listening on port ${port}`) })
 }
 
 function handleRequest(req, res) {
@@ -21,11 +20,12 @@ function handleRequest(req, res) {
     res.writeHead(
       200,
       'go on',
-      headers
+      headersACA
     )
     res.end()
     return
   }
+
   makeRequest(req)
     .then(resp => {
       res.writeHead(
@@ -33,7 +33,7 @@ function handleRequest(req, res) {
         resp.statusText,
         {
           ...resp.headers,
-          ...headers,
+          ...headersACA,
           'content-length': resp.data.length
         },
       )
@@ -53,11 +53,10 @@ function handleRequest(req, res) {
         resp.statusText,
         {
           ...resp.headers,
-          ...headers
+          ...headersACA
         }
       )
-      res.write(response.data)
-      console.log(response.data)
+      res.write(resp.data)
       res.end()
     })
 }
@@ -66,14 +65,13 @@ async function makeRequest(req) {
   const url = getUrl(req)
   const parsedURL = new nodeUrl.URL(url)
   const body = await getBody(req)
-  const headersLower = tapProps(req.headers, String.prototype.toLowerCase.call.bind(String.prototype.toLowerCase))
+  const reqHeaders = tapProps(req.headers, String.prototype.toLowerCase.call.bind(String.prototype.toLowerCase))
   const headers = {
-    "accept": "*/*",
-    "connection": "keep-alive",
-    "cache-control": "no-cache",
-    ...headersLower,
-    "user-agent": "PostmanRuntime/7.19.0",
-    "host": parsedURL.host,
+    accept: "*/*",
+    connection: "keep-alive",
+    'cache-control': "no-cache",
+    ...reqHeaders,
+    host: parsedURL.host,
     origin: parsedURL.origin,
     referer: parsedURL.origin,
   }
@@ -96,6 +94,7 @@ function tapProps(obj, fn) {
       Object.assign(acc, { [fn(key)]: obj[key] })
       , {})
 }
+
 function getBody(req) {
   return new Promise((rsv, rjt) => {
     let chunks = ''
@@ -107,12 +106,4 @@ function getBody(req) {
       rsv(chunks)
     })
   })
-}
-
-function getFromArgv(arg) {
-  const args = process.argv.slice(2)
-  const argIdx = args.findIndex(x => x === '--' + arg)
-  if (~argIdx) {
-    return args[argIdx + 1]
-  }
 }

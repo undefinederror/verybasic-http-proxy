@@ -1,19 +1,26 @@
 {
-  "name": "proxy",
+  "name": "verybasic-http-proxy",
   "version": "1.0.0",
   "description": "",
+  "author": "undefinederror <undefinederror@object.ninja>",
+  "license": "WTFPL",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/undefinederror/verybasic-http-proxy.git"
+  },
+  "bugs": "https://github.com/undefinederror/verybasic-http-proxy/issues",
+  "keywords": [
+    "node-proxy",
+    "http-proxy"
+  ],
   "main": "index.js",
+  "bin": {
+    "verybasic-http-proxy": "./cli.js"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "repository": {
-    "type": "git",
-    "url": "git@vinznet_git:~/repos/node-proxy.git"
-  },
-  "author": "",
-  "license": "ISC",
   "dependencies": {
-    "axios": "^0.19.2",
-    "http-proxy": "^1.18.0"
+    "axios": "^0.19.2"
   }
 }

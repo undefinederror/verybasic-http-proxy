@@ -2,5 +2,5 @@
 
 export = verybasic_http_proxy;
 
-declare function verybasic_http_proxy(port: number): Promise<number>;
+declare function verybasic_http_proxy(port?: number): Promise<number>;
 

@@ -8,18 +8,20 @@ const headersACA = {
 }
 
 module.exports = function createProxy(port) {
-  http
-    .createServer(handleRequest)
-    .listen(port)
-    .on('error', console.error)
-    .on('listening', () => { console.log(`verybasic-http-proxy listening on port ${port}`) })
+  return new Promise((resolve, reject) => {
+    http
+      .createServer(handleRequest)
+      .listen(port)
+      .on('error', reject)
+      .on('listening', () => resolve(port))
+  })
 }
 
 function handleRequest(req, res) {
   if (req.method === 'OPTIONS') {
     res.writeHead(
-      200,
-      'go on',
+      204,
+      null,
       headersACA
     )
     res.end()
@@ -56,7 +58,7 @@ function handleRequest(req, res) {
           ...headersACA
         }
       )
-      res.write(resp.data)
+      res.write(resp.data || '')
       res.end()
     })
 }

@@ -41,7 +41,7 @@ Port is optional, default is 5555
 
 ## Forwarding requests
 Prepend the proxy url to your request, for instance
-```http
+```
 http://localhost:5555/https://www.someapi.com?par=val
 ```
 All your request headers and data are forwarded. 
@@ -49,7 +49,7 @@ All your request headers and data are forwarded.
 The only hardcoded request headers are Host, Origin and Referer so to match the requested api.
 
 Response headers will include 
-```http
+```
  access-control-allow-headers: *
  access-control-allow-origin: *
  access-control-allow-methods: *

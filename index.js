@@ -21,8 +21,11 @@ function handleRequest(req, res) {
   if (req.method === 'OPTIONS') {
     res.writeHead(
       204,
-      null,
-      headersACA
+      'No Content',
+      {
+        Allow: '*',
+        ...headersACA
+      }
     )
     res.end()
     return

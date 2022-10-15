@@ -7,7 +7,7 @@ const headersACA = {
   'access-control-allow-methods': '*',
 }
 
-module.exports = function createProxy(port) {
+module.exports = function createProxy(port = 5555) {
   return new Promise((resolve, reject) => {
     http
       .createServer(handleRequest)

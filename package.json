@@ -22,6 +22,6 @@
     "test": "echo \"No test specified\""
   },
   "dependencies": {
-    "axios": "0.27.2"
+    "axios": "0.28.0"
   }
 }
